@@ -32,10 +32,15 @@ https://i.pinimg.com/736x/09/36/a7/0936a7a1edef5f51ba4609d3ff5b6272.jpg
  https://i.pinimg.com/736x/fa/ed/ec/faedec703a6e667c79dc465623ce6f68.jpg
 https://i.pinimg.com/1200x/10/c5/66/10c566bc9f4c17313926647fa6bba61f.jpg
 https://i.pinimg.com/736x/1d/71/6c/1d716c240943d7c7c58f9b28df7747ef.jpg
+https://i.pinimg.com/736x/cb/08/fa/cb08fa006263ca91ef07cce7bff7d2f3.jpg
+https://i.pinimg.com/736x/b0/5c/e9/b05ce94490bbabde912a9212f81e4c53.jpg
+https://i.pinimg.com/736x/a1/98/4e/a1984eda325c32e594c297bafd350111.jpg
+https://i.pinimg.com/736x/0c/f8/c9/0cf8c99a1b6f24f37e804d3a6dcd0d98.jpg
 
 
- //////////////   cute animals  
+ //////////////    animals  
 
+ https://i.pinimg.com/736x/63/c1/f1/63c1f1fa6eccb6f7116f39bb8b5597cd.jpg
  https://i.pinimg.com/736x/f6/27/4c/f6274c1d9a773849df9663c9e41040fa.jpg
 
  https://i.pinimg.com/736x/fe/48/4f/fe484f90c8a2778b6993edba1903c6d8.jpg
@@ -70,7 +75,12 @@ https://i.pinimg.com/736x/1d/71/6c/1d716c240943d7c7c58f9b28df7747ef.jpg
 
  https://i.pinimg.com/1200x/79/f4/ee/79f4eef0ac4b4ad30f3c2c44673eedbe.jpg
  https://i.pinimg.com/1200x/c7/40/45/c74045e1c8d5dddd05d695e3005b34a4.jpg
+ https://i.pinimg.com/736x/f8/77/f0/f877f07585cebea815a4a8c20a9ca4c7.jpg
+ https://i.pinimg.com/736x/45/0c/e8/450ce84a1151236645b54a5216203edc.jpg
+ https://i.pinimg.com/736x/fe/c3/37/fec337db45cafa1a385d64adb809a15e.jpg
 
+ https://i.pinimg.com/736x/b8/75/8d/b8758d39dfbec6a5c9f6db3ba4a8c7d7.jpg
+ https://i.pinimg.com/736x/4f/0c/f6/4f0cf6ea2ae4b50731a15afce145bf08.jpg
 
 
  /////////////  locations 
@@ -92,4 +102,5 @@ https://i.pinimg.com/736x/1d/71/6c/1d716c240943d7c7c58f9b28df7747ef.jpg
  https://i.pinimg.com/736x/d9/81/5d/d9815de1c58c7b3f18cca319224e5d10.jpg
  https://i.pinimg.com/736x/e9/2d/6f/e92d6f92015c19ab4bd46c9ddc0874df.jpg
  https://i.pinimg.com/736x/47/52/51/475251d853fe2820a572cb11ea9f21ae.jpg
+ https://i.pinimg.com/736x/dd/1c/9f/dd1c9f91ae83da01a25ec1f520b8176a.jpg
 
