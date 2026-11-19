@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Essential for Pinterest hotlinked images -->
+    <meta name="referrer" content="no-referrer">
+    <title>Photo Gallery Puzzle | Custom Image Collection</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .gallery-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .btn-refresh-links {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.55rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-refresh-links:hover {
+            background: rgba(56, 189, 248, 0.35);
+            color: #fff;
+            transform: scale(1.03);
+        }
+
+        .gallery-search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.6rem;
+        }
+
+        .gallery-search-box input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 0.65rem 0.85rem 0.65rem 2.2rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .gallery-search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .gallery-search-icon {
+            position: absolute;
+            left: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        .gallery-filter-scroll {
+            display: flex;
+            gap: 0.35rem;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .gallery-filter-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .gallery-filter-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .gallery-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.7rem;
+            border-radius: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .gallery-chip:hover, .gallery-chip.active {
+            background: var(--accent);
+            color: #04101e;
+            border-color: var(--accent);
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .gallery-grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            max-height: 440px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .gallery-grid-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .gallery-grid-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .gallery-card {
+            aspect-ratio: 1;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .gallery-card:hover {
+            transform: scale(1.04);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+        }
+
+        .gallery-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+        }
+
+        .gallery-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: blur(4px);
+            transition: filter 0.3s ease, transform 0.25s ease;
+        }
+
+        .gallery-card:hover img,
+        .gallery-card.active img {
+            filter: blur(0px);
+        }
+
+        .gallery-card-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 4px 4px 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        .sync-toast {
+            font-size: 0.72rem;
+            color: #34d399;
+            margin-bottom: 0.4rem;
+            min-height: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Canvas for Win Confetti Particles -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- App Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-group">
+                <div class="logo-icon">🖼️</div>
+                <div class="logo-text">
+                    <h1>Gallery Puzzle Master</h1>
+                    <p>Live sync with image-links.js (3D Couples, Cute Animals & More)</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <a href="index.html" class="gallery-nav-link" title="Go to Photo Upload Game">📁 Upload Photo Game</a>
+                <button type="button" class="icon-btn" id="sound-toggle" title="Toggle Sound (Mute/Unmute)" aria-label="Toggle sound">🔊</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="controls-sidebar">
+            <!-- 1. Custom Image Links Selector (Pure image-links.js, Zero Anime) -->
+            <div class="card">
+                <div class="gallery-top-row">
+                    <h2 class="card-title" style="margin-bottom: 0;">
+                        <span class="badge">1</span> 
+                        <span id="gallery-heading">Photo Collection</span>
+                    </h2>
+                    <button type="button" class="btn-refresh-links" id="btn-refresh-links" title="Reload links from image-links.js">
+                        🔄 Sync Links
+                    </button>
+                </div>
+                
+                <div class="sync-toast" id="sync-toast"></div>
+
+                <div class="gallery-search-box">
+                    <span class="gallery-search-icon">🔍</span>
+                    <input type="text" id="gallery-search-input" placeholder="Search category or name...">
+                </div>
+
+                <div class="gallery-filter-scroll" id="gallery-filters">
+                    <!-- Populated dynamically ONLY from image-links.js -->
+                    <button type="button" class="gallery-chip active" data-filter="all">All</button>
+                </div>
+
+                <div class="gallery-grid-container" id="gallery-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- 2. Grid Cut Size (3x3, 4x4, 6x6, 8x8) -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">2</span> Select Grid Cuts
+                </h2>
+                <div class="grid-options">
+                    <button type="button" class="grid-btn active" data-size="3">
+                        <span>3 × 3</span>
+                        <small>9 Boxes (Easy)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="4">
+                        <span>4 × 4</span>
+                        <small>16 Boxes (Medium)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="6">
+                        <span>6 × 6</span>
+                        <small>36 Boxes (Hard)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="8">
+                        <span>8 × 8</span>
+                        <small>64 Boxes (Expert)</small>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Helper Toggles -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">3</span> Game Settings
+                </h2>
+                <div class="options-list">
+                    <label class="toggle-item">
+                        <span>🔢 Show Number Guides</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggle-numbers">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+
+                    <label class="toggle-item">
+                        <span>👁️ Target Photo Preview</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggle-preview" checked>
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Original Image Preview Card -->
+            <div class="card preview-card" id="preview-card">
+                <h2 class="card-title">
+                    <span>🖼️ Target Preview</span>
+                    <span class="ratio-tag" id="ratio-badge">1:1 Square</span>
+                </h2>
+                <div class="preview-wrapper">
+                    <img id="preview-image" src="" alt="Target reference preview">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Puzzle Play Arena -->
+        <main class="puzzle-arena">
+            <!-- Game Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Time</span>
+                    <span class="stat-value highlight" id="time-display">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Moves</span>
+                    <span class="stat-value" id="moves-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Placed</span>
+                    <span class="stat-value highlight" id="placed-display">0 / 9</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-track" aria-label="Puzzle completion progress">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <!-- Puzzle Board Container -->
+            <div class="puzzle-board-wrapper" id="puzzle-board-wrapper">
+                <div class="puzzle-board" id="puzzle-board" aria-label="Puzzle play grid">
+                    <!-- Dynamic Tiles injected here -->
+                </div>
+            </div>
+
+            <!-- Victory Celebration Section -->
+            <section id="win-banner" class="win-banner hidden" aria-live="polite">
+                <div class="win-banner-header">
+                    <div class="win-banner-icon">🏆</div>
+                    <div>
+                        <h2 class="win-title">Congratulations! You Solved It!</h2>
+                        <p class="win-subtitle">Here is your completed artwork! Great job! 🎉</p>
+                    </div>
+                </div>
+
+                <div class="win-stats-grid">
+                    <div class="win-stat">
+                        <span class="win-stat-label">Time Taken</span>
+                        <span class="win-stat-val" id="win-time">00:00</span>
+                    </div>
+                    <div class="win-stat">
+                        <span class="win-stat-label">Total Moves</span>
+                        <span class="win-stat-val" id="win-moves">0</span>
+                    </div>
+                    <div class="win-stat">
+                        <span class="win-stat-label">Grid Size</span>
+                        <span class="win-stat-val" id="win-grid">3×3</span>
+                    </div>
+                </div>
+
+                <div class="win-actions-row">
+                    <button type="button" class="btn-win-primary" id="btn-next-game">
+                        ▶️ Play Again
+                    </button>
+                    <button type="button" class="btn-win-secondary" id="btn-next-level">
+                        ⬆️ Next Difficulty Level
+                    </button>
+                </div>
+            </section>
+
+            <!-- Board Bottom Actions -->
+            <div class="board-actions">
+                <button type="button" class="action-btn primary" id="shuffle-btn">
+                    <span>🔀</span> Reshuffle Tiles
+                </button>
+                <button type="button" class="action-btn" id="reset-game-btn">
+                    <span>🔄</span> New Game
+                </button>
+            </div>
+
+            <div class="instruction-banner">
+                <p>💡 <strong>How to Play:</strong> Click any photo from your collection to load it. Click a tile to select, then click another to swap. Complete the puzzle to win!</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Gallery Game Engine (Reads exclusively from image-links.js) -->
+    <script src="gallery-game.js"></script>
+</body>
+
+</html>

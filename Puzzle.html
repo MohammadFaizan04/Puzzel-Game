@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Puzzle Game | Jigsaw Picture Challenge</title>
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #121a2d;
+            --bg-card: rgba(26, 38, 63, 0.7);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.12);
+            --border-focus: #38bdf8;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --accent-glow: rgba(56, 189, 248, 0.35);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.35);
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-main: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 25px var(--accent-glow);
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --board-max-width: 540px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 60%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* App Header */
+        header {
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(10, 14, 23, 0.92);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 0.75rem;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-align: left;
+            min-width: 0;
+        }
+
+        .logo-icon {
+            font-size: 1.6rem;
+            filter: drop-shadow(0 0 8px var(--accent-glow));
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            min-width: 0;
+        }
+
+        .logo-text h1 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-card);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container Layout */
+        .app-container {
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            flex: 1;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Left Sidebar Controls */
+        .controls-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-main);
+            transition: border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title span.badge {
+            background: var(--accent);
+            color: #000;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+
+        /* Source Tabs (Upload vs URL) */
+        .photo-source-tabs {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.85rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .source-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 0.45rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .source-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .source-tab.active {
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        .source-panel {
+            display: none;
+        }
+
+        .source-panel.active {
+            display: block;
+        }
+
+        /* URL Input Controls */
+        .url-input-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .url-input-box input {
+            flex: 1;
+            min-width: 0;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.6rem 0.85rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .url-input-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .btn-load-url {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            border: 1px solid #38bdf8;
+            color: #fff;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-load-url:hover {
+            background: linear-gradient(135deg, #0369a1, #0ea5e9);
+            box-shadow: 0 0 12px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-load-url:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .url-feedback {
+            font-size: 0.74rem;
+            margin-bottom: 0.5rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .url-feedback.error {
+            display: block;
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .url-feedback.loading {
+            display: block;
+            color: var(--accent);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .url-feedback.success {
+            display: block;
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .sample-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            margin-top: 0.4rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .sample-links small {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .sample-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .sample-pill {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            padding: 0.25rem 0.55rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sample-pill:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(56, 189, 248, 0.12);
+            transform: translateY(-1px);
+        }
+
+        /* Upload & Preset Section */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.drag-active {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .upload-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .upload-hint {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .presets-container {
+            margin-top: 0.85rem;
+        }
+
+        .presets-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        .preset-thumbs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .preset-btn {
+            border: 2px solid transparent;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            aspect-ratio: 1;
+            background: #000;
+            cursor: pointer;
+            padding: 0;
+            position: relative;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .preset-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preset-btn:hover {
+            transform: scale(1.06);
+            border-color: var(--accent);
+        }
+
+        .preset-btn.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Grid Selector Buttons */
+        .grid-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .grid-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 0.5rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            transition: all 0.2s;
+        }
+
+        .grid-btn small {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .grid-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .grid-btn.active {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.1));
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        /* Toggles & Options */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+            background-color: #000;
+        }
+
+        /* Original Image Preview Box */
+        .preview-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .preview-wrapper {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-height: 220px;
+            padding: 4px;
+        }
+
+        .preview-wrapper img {
+            max-width: 100%;
+            max-height: 210px;
+            object-fit: contain;
+            display: block;
+            border-radius: 4px;
+        }
+
+        /* Ratio Indicator Badge */
+        .ratio-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+
+        /* Game Board Arena */
+        .puzzle-arena {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        /* Stats Header */
+        .stats-bar {
+            width: 100%;
+            max-width: 540px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1.25rem;
+            box-shadow: var(--shadow-main);
+            transition: max-width 0.3s ease;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.15rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-value.highlight {
+            color: var(--accent);
+        }
+
+        .progress-track {
+            width: 100%;
+            max-width: 540px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: max-width 0.3s ease;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            transition: width 0.3s ease;
+        }
+
+        /* The Puzzle Board - Dynamically Sized per Uploaded Image Ratio */
+        .puzzle-board-wrapper {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            max-width: 100%;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            padding: 4px;
+            box-shadow: var(--shadow-main), 0 0 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            transition: width 0.3s ease, height 0.3s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .puzzle-board {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            gap: 1px;
+            /* Ultra-thin crisp hairline divider */
+            position: relative;
+            user-select: none;
+            touch-action: none;
+            border-radius: calc(var(--radius-sm) - 2px);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.3);
+            /* Subtle hairline color between boxes */
+            transition: gap 0.4s ease, background-color 0.4s ease;
+        }
+
+        /* Solved Full Picture State - Blends seamlessly into a complete artwork! */
+        .puzzle-board.puzzle-solved {
+            gap: 0 !important;
+            background: transparent !important;
+        }
+
+        .puzzle-board.puzzle-solved .puzzle-tile {
+            border: none !important;
+            border-radius: 0 !important;
+            outline: none !important;
+            cursor: default !important;
+            filter: none !important;
+            transform: none !important;
+        }
+
+        .puzzle-board.puzzle-solved .puzzle-tile::after {
+            display: none !important;
+        }
+
+        .puzzle-board.puzzle-solved .tile-number {
+            display: none !important;
+        }
+
+        .puzzle-board-wrapper.puzzle-solved {
+            border-color: #facc15;
+            box-shadow: 0 0 35px rgba(250, 204, 21, 0.45), 0 20px 40px rgba(0, 0, 0, 0.6);
+            animation: solvedGlow 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes solvedGlow {
+            from {
+                box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), 0 20px 40px rgba(0, 0, 0, 0.6);
+            }
+
+            to {
+                box-shadow: 0 0 50px rgba(250, 204, 21, 0.7), 0 20px 40px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        /* Individual Puzzle Tiles */
+        .puzzle-tile {
+            position: relative;
+            border-radius: 0;
+            /* Square edges so hairline cuts look continuous */
+            border: none;
+            cursor: grab;
+            background-repeat: no-repeat;
+            /* Zero transition on background-position for instantaneous, zero-delay tile swaps */
+            transition: filter 0.1s ease;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        .puzzle-tile:hover {
+            filter: brightness(1.12);
+        }
+
+        .puzzle-tile:active {
+            cursor: grabbing;
+        }
+
+        /* Selected state (for click-to-swap) */
+        .puzzle-tile.selected {
+            outline: 2px solid var(--accent);
+            outline-offset: -1px;
+            box-shadow: 0 0 16px var(--accent), inset 0 0 10px var(--accent-glow);
+            z-index: 10;
+            animation: pulseBorder 1.5s infinite;
+        }
+
+        @keyframes pulseBorder {
+
+            0%,
+            100% {
+                outline-color: var(--accent);
+                box-shadow: 0 0 10px var(--accent);
+            }
+
+            50% {
+                outline-color: #ffffff;
+                box-shadow: 0 0 18px var(--accent);
+            }
+        }
+
+        /* Dragging state */
+        .puzzle-tile.dragging {
+            opacity: 0.35;
+        }
+
+        .puzzle-tile.drag-hover {
+            outline: 2px dashed var(--accent);
+            outline-offset: -2px;
+            background-color: rgba(56, 189, 248, 0.2);
+        }
+
+        /* Tile number hint badge */
+        .tile-number {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 4px;
+            border-radius: 3px;
+            pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        body.show-numbers .tile-number {
+            opacity: 1;
+        }
+
+        /* Victory Banner situated BELOW the board */
+        .win-banner {
+            width: 100%;
+            max-width: var(--board-max-width, 540px);
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+            border: 1.5px solid rgba(250, 204, 21, 0.5);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(250, 204, 21, 0.25);
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .win-banner.hidden {
+            display: none;
+        }
+
+        .win-banner-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .win-banner-icon {
+            font-size: 2.75rem;
+            animation: bounce 1s infinite alternate;
+        }
+
+        .win-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #facc15, #f59e0b, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+            text-align: left;
+        }
+
+        .win-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .win-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .win-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .win-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .win-stat-val {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .win-actions-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-win-primary {
+            flex: 1 1 160px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: 1px solid #34d399;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s;
+        }
+
+        .btn-win-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-win-secondary {
+            flex: 1 1 160px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-win-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* Action Controls Toolbar under Board */
+        .board-actions {
+            display: flex;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: var(--board-max-width, 540px);
+        }
+
+        .action-btn {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            border-color: #38bdf8;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+        }
+
+        .action-btn.primary:hover {
+            background: linear-gradient(135deg, #0369a1, #0ea5e9);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+        }
+
+        /* Help text banner */
+        .instruction-banner {
+            max-width: var(--board-max-width, 540px);
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .instruction-banner kbd {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+            font-family: inherit;
+            font-size: 0.75rem;
+        }
+
+        /* Confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-6px);
+            }
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Mobile Optimizations */
+        @media (max-width: 640px) {
+            header {
+                padding: 0.5rem 0.85rem;
+            }
+
+            .header-content {
+                gap: 0.5rem;
+            }
+
+            .logo-icon {
+                font-size: 1.35rem;
+            }
+
+            .logo-text h1 {
+                font-size: 1.05rem;
+            }
+
+            .logo-text p {
+                display: none;
+                /* Hide long subtitle on mobile screens for super compact header */
+            }
+
+            .icon-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 0.95rem;
+            }
+
+            .app-container {
+                padding: 0.75rem 0.5rem;
+                gap: 1rem;
+            }
+
+            .puzzle-board-wrapper {
+                padding: 3px;
+            }
+
+            .stats-bar {
+                padding: 0.5rem 0.75rem;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
+            }
+
+            .stat-value {
+                font-size: 1rem;
+            }
+
+            .board-actions {
+                gap: 0.5rem;
+            }
+
+            .action-btn {
+                padding: 0.65rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .instruction-banner {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Canvas for Win Confetti Particles -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- App Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-group">
+                <div class="logo-icon">🧩</div>
+                <div class="logo-text">
+                    <h1>Photo Puzzle Master</h1>
+                    <p>Upload your image, select grid cuts, and solve the jigsaw puzzle!</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button type="button" class="icon-btn" id="sound-toggle" title="Toggle Sound (Mute/Unmute)"
+                    aria-label="Toggle sound">🔊</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="controls-sidebar">
+            <!-- 1. Upload Local Image, Web URL & Presets -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">1</span> Choose Photo
+                </h2>
+
+                <!-- Tab selector: Upload File vs Image Web Link -->
+                <div class="photo-source-tabs">
+                    <button type="button" class="source-tab active" data-tab="upload">📁 Upload File</button>
+                    <button type="button" class="source-tab" data-tab="url">🔗 Image Link (URL)</button>
+                </div>
+
+                <!-- Panel 1: Local File Upload -->
+                <div class="source-panel active" id="panel-upload">
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Upload Local Photo</div>
+                        <div class="upload-hint">Click to browse or drag & drop (PNG, JPG, WEBP)</div>
+                        <input type="file" id="file-upload" accept="image/*" aria-label="Upload local photo">
+                    </div>
+                </div>
+
+                <!-- Panel 2: External Image URL Link -->
+                <div class="source-panel" id="panel-url">
+                    <div class="url-input-box">
+                        <input type="url" id="image-url-input" placeholder="Paste image link (https://...)"
+                            aria-label="External image link">
+                        <button type="button" id="btn-load-url" class="btn-load-url">Load</button>
+                    </div>
+                    <div class="url-feedback" id="url-feedback"></div>
+                    <div class="sample-links">
+                        <small>Quick sample image links:</small>
+                        <div class="sample-pills">
+                            <button type="button" class="sample-pill"
+                                data-url="https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1000&q=80">Art
+                                Portrait</button>
+                            <button type="button" class="sample-pill"
+                                data-url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1000&q=80">Mountain
+                                16:9</button>
+                            <button type="button" class="sample-pill"
+                                data-url="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1000&q=80">Aurora
+                                Night</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="presets-container">
+                    <p class="presets-label">Or choose a preset artwork:</p>
+                    <div class="preset-thumbs" id="preset-thumbs">
+                        <!-- Presets injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Grid Cut Size (3x3, 4x4, 6x6, 8x8) -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">2</span> Select Grid Cuts
+                </h2>
+                <div class="grid-options">
+                    <button type="button" class="grid-btn active" data-size="3">
+                        <span>3 × 3</span>
+                        <small>9 Boxes (Easy)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="4">
+                        <span>4 × 4</span>
+                        <small>16 Boxes (Medium)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="6">
+                        <span>6 × 6</span>
+                        <small>36 Boxes (Hard)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="8">
+                        <span>8 × 8</span>
+                        <small>64 Boxes (Expert)</small>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Helper Toggles -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">3</span> Game Settings
+                </h2>
+                <div class="options-list">
+                    <label class="toggle-item">
+                        <span>🔢 Show Number Guides</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggle-numbers">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+
+                    <label class="toggle-item">
+                        <span>👁️ Target Photo Preview</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggle-preview" checked>
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Original Image Preview Card -->
+            <div class="card preview-card" id="preview-card">
+                <h2 class="card-title">
+                    <span>🖼️ Target Preview</span>
+                    <span class="ratio-tag" id="ratio-badge">1:1 Square</span>
+                </h2>
+                <div class="preview-wrapper">
+                    <img id="preview-image" src="" alt="Target reference preview">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Puzzle Play Arena -->
+        <main class="puzzle-arena">
+            <!-- Game Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Time</span>
+                    <span class="stat-value highlight" id="time-display">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Moves</span>
+                    <span class="stat-value" id="moves-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Placed</span>
+                    <span class="stat-value highlight" id="placed-display">0 / 9</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-track" aria-label="Puzzle completion progress">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <!-- Puzzle Board Container -->
+            <div class="puzzle-board-wrapper" id="puzzle-board-wrapper">
+                <div class="puzzle-board" id="puzzle-board" aria-label="Puzzle play grid">
+                    <!-- Dynamic Tiles injected here -->
+                </div>
+            </div>
+
+            <!-- Victory Celebration Section (Situated BELOW the board so user can admire the completed picture!) -->
+            <section id="win-banner" class="win-banner hidden" aria-live="polite">
+                <div class="win-banner-header">
+                    <div class="win-banner-icon">🏆</div>
+                    <div>
+                        <h2 class="win-title">Congratulations! You Solved It!</h2>
+                        <p class="win-subtitle">Here is your completed picture! You did an amazing job! 🎉</p>
+                    </div>
+                </div>
+
+                <div class="win-stats-grid">
+                    <div class="win-stat">
+                        <span class="win-stat-label">Time Taken</span>
+                        <span class="win-stat-val" id="win-time">00:00</span>
+                    </div>
+                    <div class="win-stat">
+                        <span class="win-stat-label">Total Moves</span>
+                        <span class="win-stat-val" id="win-moves">0</span>
+                    </div>
+                    <div class="win-stat">
+                        <span class="win-stat-label">Grid Size</span>
+                        <span class="win-stat-val" id="win-grid">3×3</span>
+                    </div>
+                </div>
+
+                <div class="win-actions-row">
+                    <button type="button" class="btn-win-primary" id="btn-next-game">
+                        ▶️ Play Again
+                    </button>
+                    <button type="button" class="btn-win-secondary" id="btn-next-level">
+                        ⬆️ Next Difficulty Level
+                    </button>
+                    <button type="button" class="btn-win-secondary" id="btn-upload-win">
+                        📁 Upload Another Photo
+                    </button>
+                </div>
+            </section>
+
+            <!-- Board Bottom Actions -->
+            <div class="board-actions">
+                <button type="button" class="action-btn primary" id="shuffle-btn">
+                    <span>🔀</span> Reshuffle Tiles
+                </button>
+                <button type="button" class="action-btn" id="reset-game-btn">
+                    <span>🔄</span> New Game
+                </button>
+            </div>
+
+            <div class="instruction-banner">
+                <p>💡 <strong>How to Play:</strong> Click a tile to select it, then click another tile to swap them. Or
+                    simply <strong>drag and drop</strong> tiles into their correct positions!</p>
+            </div>
+        </main>
+    </div>
+<script>// --- Built-in Royalty-Free Artwork Presets in Different Aspect Ratios ---
+    const PRESETS = [
+        {
+            name: "16:9 Cyberpunk City",
+            ratioLabel: "16:9 Widescreen",
+            width: 960,
+            height: 540,
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+            <defs>
+                <linearGradient id="cyberSky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#05051a"/>
+                    <stop offset="50%" stop-color="#2a0845"/>
+                    <stop offset="85%" stop-color="#ff007f"/>
+                    <stop offset="100%" stop-color="#ffe600"/>
+                </linearGradient>
+                <linearGradient id="neonSun" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ffe600"/>
+                    <stop offset="100%" stop-color="#ff007f"/>
+                </linearGradient>
+            </defs>
+            <rect width="960" height="540" fill="url(#cyberSky)"/>
+            <!-- Retro Sun with horizontal stripes -->
+            <mask id="sunMask">
+                <rect width="960" height="540" fill="#fff"/>
+                <line x1="280" y1="230" x2="680" y2="230" stroke="#000" stroke-width="5"/>
+                <line x1="280" y1="250" x2="680" y2="250" stroke="#000" stroke-width="8"/>
+                <line x1="280" y1="275" x2="680" y2="275" stroke="#000" stroke-width="12"/>
+                <line x1="280" y1="305" x2="680" y2="305" stroke="#000" stroke-width="16"/>
+            </mask>
+            <circle cx="480" cy="250" r="130" fill="url(#neonSun)" mask="url(#sunMask)"/>
+            <!-- Skyscrapers -->
+            <rect x="50" y="260" width="90" height="150" fill="#080718"/>
+            <rect x="120" y="200" width="110" height="210" fill="#120c2b"/>
+            <rect x="250" y="170" width="100" height="240" fill="#0b081c"/>
+            <rect x="380" y="150" width="140" height="260" fill="#190e38"/>
+            <rect x="550" y="190" width="100" height="220" fill="#0b081c"/>
+            <rect x="670" y="230" width="120" height="180" fill="#140b2e"/>
+            <rect x="800" y="270" width="100" height="140" fill="#080718"/>
+            <!-- Windows Glow -->
+            <g fill="#00f3ff" opacity="0.8">
+                <rect x="140" y="220" width="6" height="10"/>
+                <rect x="170" y="250" width="6" height="10"/>
+                <rect x="280" y="190" width="8" height="12"/>
+                <rect x="410" y="180" width="10" height="14"/>
+                <rect x="460" y="220" width="10" height="14"/>
+                <rect x="580" y="210" width="8" height="12"/>
+                <rect x="710" y="250" width="6" height="10"/>
+            </g>
+            <g fill="#ff007f" opacity="0.8">
+                <rect x="180" y="280" width="6" height="10"/>
+                <rect x="300" y="240" width="8" height="12"/>
+                <rect x="430" y="240" width="10" height="14"/>
+                <rect x="600" y="260" width="8" height="12"/>
+            </g>
+            <!-- 3D Grid Floor -->
+            <rect y="400" width="960" height="140" fill="#05051a"/>
+            <g stroke="#00f3ff" stroke-width="1.8" opacity="0.7">
+                <line x1="480" y1="400" x2="-200" y2="540"/>
+                <line x1="480" y1="400" x2="60" y2="540"/>
+                <line x1="480" y1="400" x2="270" y2="540"/>
+                <line x1="480" y1="400" x2="480" y2="540"/>
+                <line x1="480" y1="400" x2="690" y2="540"/>
+                <line x1="480" y1="400" x2="900" y2="540"/>
+                <line x1="480" y1="400" x2="1160" y2="540"/>
+                <!-- Horizontal grid lines -->
+                <line x1="0" y1="412" x2="960" y2="412" stroke-width="1"/>
+                <line x1="0" y1="430" x2="960" y2="430" stroke-width="1.5"/>
+                <line x1="0" y1="458" x2="960" y2="458" stroke-width="2"/>
+                <line x1="0" y1="495" x2="960" y2="495" stroke-width="2.5"/>
+            </g>
+        </svg>`
+        },
+        {
+            name: "9:16 Galaxy Rocket",
+            ratioLabel: "9:16 Portrait",
+            width: 540,
+            height: 960,
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 960" width="540" height="960">
+            <defs>
+                <linearGradient id="deepSpace" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#020617"/>
+                    <stop offset="35%" stop-color="#1e1b4b"/>
+                    <stop offset="70%" stop-color="#431407"/>
+                    <stop offset="100%" stop-color="#7c2d12"/>
+                </linearGradient>
+                <radialGradient id="nebulaGlow" cx="50%" cy="30%" r="50%">
+                    <stop offset="0%" stop-color="#9333ea" stop-opacity="0.8"/>
+                    <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="flameGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="30%" stop-color="#facc15"/>
+                    <stop offset="70%" stop-color="#f97316"/>
+                    <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <rect width="540" height="960" fill="url(#deepSpace)"/>
+            <circle cx="270" cy="280" r="260" fill="url(#nebulaGlow)"/>
+            <!-- Distant Moon -->
+            <circle cx="120" cy="180" r="45" fill="#f8fafc"/>
+            <circle cx="130" cy="175" r="42" fill="#0f172a" opacity="0.45"/>
+            <!-- Stars -->
+            <g fill="#ffffff">
+                <circle cx="80" cy="90" r="1.5"/><circle cx="210" cy="60" r="2.5"/><circle cx="340" cy="110" r="1"/>
+                <circle cx="450" cy="70" r="2"/><circle cx="160" cy="280" r="1.5"/><circle cx="420" cy="240" r="2"/>
+                <circle cx="90" cy="420" r="2"/><circle cx="470" cy="390" r="1.5"/><circle cx="140" cy="600" r="2.5"/>
+                <circle cx="410" cy="620" r="2"/><circle cx="80" cy="750" r="1.5"/><circle cx="460" cy="770" r="2.5"/>
+            </g>
+            <!-- Rocket Exhaust Flame -->
+            <polygon points="270,720 230,580 310,580" fill="url(#flameGrad)"/>
+            <polygon points="270,820 245,580 295,580" fill="url(#flameGrad)" opacity="0.8"/>
+            <!-- Rocket Body -->
+            <path d="M270,330 C230,410 220,530 220,580 L320,580 C320,530 310,410 270,330 Z" fill="#f1f5f9"/>
+            <!-- Rocket Fin Left -->
+            <polygon points="220,530 160,590 220,580" fill="#dc2626"/>
+            <!-- Rocket Fin Right -->
+            <polygon points="320,530 380,590 320,580" fill="#dc2626"/>
+            <!-- Rocket Tip -->
+            <path d="M270,330 C250,370 240,410 240,430 L300,430 C300,410 290,370 270,330 Z" fill="#dc2626"/>
+            <!-- Porthole Window -->
+            <circle cx="270" cy="480" r="25" fill="#0284c7" stroke="#94a3b8" stroke-width="6"/>
+            <circle cx="278" cy="472" r="8" fill="#bae6fd"/>
+        </svg>`
+        },
+        {
+            name: "4:3 Sunset Mountain",
+            ratioLabel: "4:3 Landscape",
+            width: 800,
+            height: 600,
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+            <defs>
+                <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0f172a"/>
+                    <stop offset="35%" stop-color="#b91c1c"/>
+                    <stop offset="65%" stop-color="#f97316"/>
+                    <stop offset="100%" stop-color="#fde047"/>
+                </linearGradient>
+                <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="40%" stop-color="#fef08a" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="m1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#3b0764"/>
+                    <stop offset="100%" stop-color="#1e1b4b"/>
+                </linearGradient>
+                <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1e1b4b"/>
+                    <stop offset="100%" stop-color="#09090b"/>
+                </linearGradient>
+                <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#f97316" stop-opacity="0.8"/>
+                    <stop offset="25%" stop-color="#b91c1c" stop-opacity="0.7"/>
+                    <stop offset="100%" stop-color="#0f172a"/>
+                </linearGradient>
+            </defs>
+            <rect width="800" height="600" fill="url(#sky)"/>
+            <circle cx="400" cy="350" r="110" fill="url(#sunGlow)"/>
+            <circle cx="400" cy="350" r="70" fill="#ffffff"/>
+            <!-- Mountains -->
+            <polygon points="-50,460 180,240 420,460" fill="url(#m1)"/>
+            <polygon points="250,460 520,200 750,460" fill="url(#m1)"/>
+            <polygon points="550,460 680,280 850,460" fill="url(#m1)"/>
+            <polygon points="80,460 310,270 580,460" fill="url(#m2)"/>
+            <polygon points="-80,460 120,310 340,460" fill="url(#m2)"/>
+            <polygon points="450,460 640,300 890,460" fill="url(#m2)"/>
+            <!-- Lake -->
+            <rect y="440" width="800" height="160" fill="url(#water)"/>
+            <ellipse cx="400" cy="490" rx="140" ry="20" fill="#fef08a" opacity="0.4"/>
+            <ellipse cx="400" cy="530" rx="80" ry="10" fill="#fef08a" opacity="0.3"/>
+            <!-- Pines -->
+            <path d="M60,460 L80,410 L100,460 Z" fill="#020617"/>
+            <path d="M120,465 L145,405 L170,465 Z" fill="#020617"/>
+            <path d="M680,460 L705,405 L730,460 Z" fill="#020617"/>
+            <path d="M720,470 L740,415 L760,470 Z" fill="#020617"/>
+        </svg>`
+        },
+        {
+            name: "1:1 Geometric Tiger",
+            ratioLabel: "1:1 Square",
+            width: 800,
+            height: 800,
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+            <defs>
+                <linearGradient id="polyBg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#0f172a"/>
+                    <stop offset="100%" stop-color="#1e1b4b"/>
+                </linearGradient>
+            </defs>
+            <rect width="800" height="800" fill="url(#polyBg)"/>
+            <polygon points="400,160 300,240 400,280" fill="#ea580c"/>
+            <polygon points="400,160 500,240 400,280" fill="#f97316"/>
+            <polygon points="300,240 220,210 260,320" fill="#c2410c"/>
+            <polygon points="500,240 580,210 540,320" fill="#fb923c"/>
+            <polygon points="260,320 300,240 370,320" fill="#fdba74"/>
+            <polygon points="540,320 500,240 430,320" fill="#fed7aa"/>
+            <polygon points="400,280 370,320 430,320" fill="#ffedd5"/>
+            <!-- Eyes -->
+            <polygon points="330,340 370,320 380,360" fill="#0284c7"/>
+            <polygon points="470,340 430,320 420,360" fill="#38bdf8"/>
+            <polygon points="345,340 370,330 365,350" fill="#38bdf8"/>
+            <polygon points="455,340 430,330 435,350" fill="#7dd3fc"/>
+            <!-- Snout -->
+            <polygon points="400,280 380,360 400,420" fill="#f97316"/>
+            <polygon points="400,280 420,360 400,420" fill="#ea580c"/>
+            <polygon points="380,360 330,420 400,420" fill="#fed7aa"/>
+            <polygon points="420,360 470,420 400,420" fill="#fdba74"/>
+            <polygon points="400,420 375,470 425,470" fill="#18181b"/>
+            <polygon points="375,470 330,520 400,530" fill="#f1f5f9"/>
+            <polygon points="425,470 470,520 400,530" fill="#e2e8f0"/>
+            <polygon points="400,530 360,590 400,640" fill="#ea580c"/>
+            <polygon points="400,530 440,590 400,640" fill="#c2410c"/>
+            <!-- Mane -->
+            <polygon points="260,320 180,390 290,430" fill="#b45309"/>
+            <polygon points="540,320 620,390 510,430" fill="#d97706"/>
+            <polygon points="180,390 230,520 290,430" fill="#78350f"/>
+            <polygon points="620,390 570,520 510,430" fill="#92400e"/>
+            <polygon points="230,520 330,590 330,520" fill="#b45309"/>
+            <polygon points="570,520 470,590 470,520" fill="#d97706"/>
+        </svg>`
+        }
+    ];
+
+    // Helper to convert SVG text to Data URL
+    function svgToDataUrl(svgString) {
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+    }
+
+    // --- Synthesized Sound Effects (Pure Web Audio API - Zero External Dependencies) ---
+    class SoundManager {
+        constructor() {
+            this.ctx = null;
+            this.enabled = true;
+        }
+
+        init() {
+            if (!this.ctx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    this.ctx = new AudioContext();
+                }
+            }
+            if (this.ctx && this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        }
+
+        playSelect() {
+            if (!this.enabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(480, now);
+            osc.frequency.exponentialRampToValueAtTime(720, now + 0.06);
+
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.06);
+        }
+
+        playSwap() {
+            if (!this.enabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.1);
+        }
+
+        playCorrect() {
+            if (!this.enabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            [523.25, 659.25].forEach((freq, i) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + i * 0.04);
+
+                gain.gain.setValueAtTime(0.12, now + i * 0.04);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.2);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now + i * 0.04);
+                osc.stop(now + i * 0.04 + 0.2);
+            });
+        }
+
+        playWin() {
+            if (!this.enabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const notes = [392, 523.25, 659.25, 783.99, 1046.50];
+            const now = this.ctx.currentTime;
+            notes.forEach((freq, idx) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+
+                gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.4);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now + idx * 0.1);
+                osc.stop(now + idx * 0.1 + 0.4);
+            });
+        }
+    }
+
+    // --- Confetti Animation Canvas ---
+    class ConfettiCannon {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            this.particles = [];
+            this.animId = null;
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+        }
+
+        resize() {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+        }
+
+        fire() {
+            this.particles = [];
+            const colors = ['#38bdf8', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ffffff'];
+            for (let i = 0; i < 150; i++) {
+                this.particles.push({
+                    x: this.canvas.width / 2 + (Math.random() - 0.5) * 200,
+                    y: this.canvas.height / 2 + 50,
+                    vx: (Math.random() - 0.5) * 16,
+                    vy: -(Math.random() * 15 + 10),
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    vRot: (Math.random() - 0.5) * 10,
+                    gravity: 0.45,
+                    opacity: 1
+                });
+            }
+            if (this.animId) cancelAnimationFrame(this.animId);
+            this.loop();
+        }
+
+        loop() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            let active = 0;
+
+            for (let p of this.particles) {
+                p.x += p.vx;
+                p.vy += p.gravity;
+                p.y += p.vy;
+                p.rotation += p.vRot;
+                p.opacity -= 0.005;
+
+                if (p.opacity > 0 && p.y < this.canvas.height + 50) {
+                    active++;
+                    this.ctx.save();
+                    this.ctx.translate(p.x, p.y);
+                    this.ctx.rotate((p.rotation * Math.PI) / 180);
+                    this.ctx.globalAlpha = Math.max(0, p.opacity);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+                    this.ctx.restore();
+                }
+            }
+
+            if (active > 0) {
+                this.animId = requestAnimationFrame(() => this.loop());
+            } else {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+    }
+
+    // --- Main Puzzle Game Controller ---
+    class PuzzleGame {
+        constructor() {
+            this.gridSize = 3; // Default 3x3
+            this.imageNaturalWidth = PRESETS[0].width;
+            this.imageNaturalHeight = PRESETS[0].height;
+            this.imageAspectRatio = PRESETS[0].width / PRESETS[0].height;
+            this.currentImageUrl = svgToDataUrl(PRESETS[0].svg);
+
+            this.tiles = [];
+            this.selectedTileIndex = null;
+            this.moves = 0;
+            this.seconds = 0;
+            this.timerInterval = null;
+            this.timerStarted = false;
+            this.isWon = false;
+
+            this.sound = new SoundManager();
+            this.confetti = new ConfettiCannon(document.getElementById('confetti-canvas'));
+
+            this.initDOM();
+            this.initPresets();
+            this.bindEvents();
+            this.updateBoardDimensions();
+            this.loadNewGame();
+        }
+
+        initDOM() {
+            this.board = document.getElementById('puzzle-board');
+            this.boardWrapper = document.getElementById('puzzle-board-wrapper');
+            this.previewImg = document.getElementById('preview-image');
+            this.ratioBadge = document.getElementById('ratio-badge');
+            this.timeDisplay = document.getElementById('time-display');
+            this.movesDisplay = document.getElementById('moves-display');
+            this.placedDisplay = document.getElementById('placed-display');
+            this.progressFill = document.getElementById('progress-fill');
+            this.fileInput = document.getElementById('file-upload');
+            this.uploadZone = document.getElementById('upload-zone');
+            this.urlInput = document.getElementById('image-url-input');
+            this.btnLoadUrl = document.getElementById('btn-load-url');
+            this.urlFeedback = document.getElementById('url-feedback');
+            this.winBanner = document.getElementById('win-banner');
+            this.numbersToggle = document.getElementById('toggle-numbers');
+            this.soundToggle = document.getElementById('sound-toggle');
+            this.previewCard = document.getElementById('preview-card');
+            this.togglePreviewCheck = document.getElementById('toggle-preview');
+            this.shuffleBtn = document.getElementById('shuffle-btn');
+            this.resetGameBtn = document.getElementById('reset-game-btn');
+
+            // Win banner elements (placed below the board)
+            this.winTime = document.getElementById('win-time');
+            this.winMoves = document.getElementById('win-moves');
+            this.winGrid = document.getElementById('win-grid');
+            this.btnNextGame = document.getElementById('btn-next-game');
+            this.btnNextLevel = document.getElementById('btn-next-level');
+            this.btnUploadWin = document.getElementById('btn-upload-win');
+        }
+
+        initPresets() {
+            const container = document.getElementById('preset-thumbs');
+            container.innerHTML = '';
+            PRESETS.forEach((preset, index) => {
+                const btn = document.createElement('button');
+                btn.className = `preset-btn ${index === 0 ? 'active' : ''}`;
+                btn.type = 'button';
+                btn.title = `${preset.name} (${preset.ratioLabel})`;
+                const img = document.createElement('img');
+                img.src = svgToDataUrl(preset.svg);
+                img.alt = preset.name;
+                btn.appendChild(img);
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.setImage(img.src, preset.width, preset.height);
+                });
+                container.appendChild(btn);
+            });
+
+            // Set initial preview
+            this.previewImg.src = this.currentImageUrl;
+            if (this.ratioBadge) {
+                this.ratioBadge.textContent = this.getRatioLabel(this.imageNaturalWidth, this.imageNaturalHeight);
+            }
+        }
+
+        bindEvents() {
+            // Grid buttons
+            document.querySelectorAll('.grid-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.grid-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.gridSize = parseInt(btn.dataset.size, 10);
+                    this.loadNewGame();
+                });
+            });
+
+            // Window resize keeps board proportions responsive
+            window.addEventListener('resize', () => {
+                this.updateBoardDimensions();
+            });
+
+            // File upload
+            this.fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) this.handleLocalImage(file);
+            });
+
+            // Drag & Drop image file onto upload zone
+            ['dragenter', 'dragover'].forEach(name => {
+                this.uploadZone.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.uploadZone.classList.add('drag-active');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(name => {
+                this.uploadZone.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.uploadZone.classList.remove('drag-active');
+                });
+            });
+
+            this.uploadZone.addEventListener('drop', (e) => {
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    this.handleLocalImage(file);
+                }
+            });
+
+            // Tab switching (File Upload vs Web Link URL)
+            document.querySelectorAll('.source-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.source-panel').forEach(p => p.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetPanel = document.getElementById(`panel-${tab.dataset.tab}`);
+                    if (targetPanel) targetPanel.classList.add('active');
+                });
+            });
+
+            // URL Load Button & Enter key handler
+            if (this.btnLoadUrl) {
+                this.btnLoadUrl.addEventListener('click', () => {
+                    this.handleUrlLoad(this.urlInput.value.trim());
+                });
+            }
+
+            if (this.urlInput) {
+                this.urlInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.handleUrlLoad(this.urlInput.value.trim());
+                    }
+                });
+            }
+
+            // Quick sample pills handler
+            document.querySelectorAll('.sample-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    if (this.urlInput) {
+                        this.urlInput.value = pill.dataset.url;
+                    }
+                    this.handleUrlLoad(pill.dataset.url);
+                });
+            });
+
+            // Action buttons
+            this.shuffleBtn.addEventListener('click', () => {
+                this.sound.playSelect();
+                this.loadNewGame();
+            });
+
+            this.resetGameBtn.addEventListener('click', () => {
+                this.sound.playSelect();
+                this.loadNewGame();
+            });
+
+            // Toggle numbers
+            this.numbersToggle.addEventListener('change', () => {
+                if (this.numbersToggle.checked) {
+                    document.body.classList.add('show-numbers');
+                } else {
+                    document.body.classList.remove('show-numbers');
+                }
+            });
+
+            // Toggle sound
+            this.soundToggle.addEventListener('click', () => {
+                this.sound.enabled = !this.sound.enabled;
+                this.soundToggle.textContent = this.sound.enabled ? '🔊' : '🔇';
+                this.soundToggle.title = this.sound.enabled ? 'Mute Sound' : 'Enable Sound';
+            });
+
+            // Toggle Preview
+            this.togglePreviewCheck.addEventListener('change', () => {
+                this.previewCard.style.display = this.togglePreviewCheck.checked ? 'block' : 'none';
+            });
+
+            // Win banner buttons
+            this.btnNextGame.addEventListener('click', () => {
+                this.loadNewGame();
+            });
+
+            this.btnNextLevel.addEventListener('click', () => {
+                const levels = [3, 4, 6, 8];
+                const currentIdx = levels.indexOf(this.gridSize);
+                const nextSize = currentIdx < levels.length - 1 ? levels[currentIdx + 1] : 3;
+                document.querySelectorAll('.grid-btn').forEach(b => {
+                    b.classList.toggle('active', parseInt(b.dataset.size, 10) === nextSize);
+                });
+                this.gridSize = nextSize;
+                this.loadNewGame();
+            });
+
+            this.btnUploadWin.addEventListener('click', () => {
+                this.fileInput.click();
+            });
+        }
+
+        // Ratio label detector
+        getRatioLabel(width, height) {
+            const ratio = width / height;
+            if (Math.abs(ratio - 16 / 9) < 0.08) return "16:9 Widescreen";
+            if (Math.abs(ratio - 9 / 16) < 0.08) return "9:16 Portrait";
+            if (Math.abs(ratio - 4 / 3) < 0.08) return "4:3 Landscape";
+            if (Math.abs(ratio - 3 / 4) < 0.08) return "3:4 Portrait";
+            if (Math.abs(ratio - 1) < 0.08) return "1:1 Square";
+            if (Math.abs(ratio - 21 / 9) < 0.1) return "21:9 Ultrawide";
+            return `${width}:${height} (${ratio > 1 ? 'Landscape' : 'Portrait'})`;
+        }
+
+        // Handle External Image URL Loading
+        handleUrlLoad(url) {
+            if (!url) {
+                this.showUrlFeedback("Please enter or paste an image link.", "error");
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
+                this.showUrlFeedback("Please enter a valid link starting with http:// or https://", "error");
+                return;
+            }
+
+            this.showUrlFeedback("Loading image from link...", "loading");
+            if (this.btnLoadUrl) this.btnLoadUrl.disabled = true;
+
+            const img = new Image();
+            img.onload = () => {
+                if (this.btnLoadUrl) this.btnLoadUrl.disabled = false;
+                this.showUrlFeedback("Image loaded successfully!", "success");
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                this.setImage(url, img.naturalWidth, img.naturalHeight);
+                setTimeout(() => {
+                    if (this.urlFeedback && this.urlFeedback.classList.contains('success')) {
+                        this.urlFeedback.style.display = 'none';
+                    }
+                }, 3000);
+            };
+
+            img.onerror = () => {
+                if (this.btnLoadUrl) this.btnLoadUrl.disabled = false;
+                this.showUrlFeedback("Could not load image. Make sure the link is a direct image URL (jpg, png, webp) and publicly accessible.", "error");
+            };
+
+            img.src = url;
+        }
+
+        showUrlFeedback(text, type) {
+            if (!this.urlFeedback) return;
+            this.urlFeedback.textContent = text;
+            this.urlFeedback.className = `url-feedback ${type}`;
+            this.urlFeedback.style.display = 'block';
+        }
+
+        handleLocalImage(file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const rawUrl = event.target.result;
+                const img = new Image();
+                img.onload = () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    this.setImage(rawUrl, img.naturalWidth, img.naturalHeight);
+                };
+                img.src = rawUrl;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        setImage(dataUrl, naturalWidth, naturalHeight) {
+            this.currentImageUrl = dataUrl;
+            this.imageNaturalWidth = naturalWidth;
+            this.imageNaturalHeight = naturalHeight;
+            this.imageAspectRatio = naturalWidth / naturalHeight;
+
+            this.previewImg.src = dataUrl;
+            if (this.ratioBadge) {
+                this.ratioBadge.textContent = this.getRatioLabel(naturalWidth, naturalHeight);
+            }
+
+            this.updateBoardDimensions();
+            this.loadNewGame();
+        }
+
+        // Dynamic Board & Box Sizing according to image aspect ratio (Optimized for Large PC screens & Mobile)
+        updateBoardDimensions() {
+            const ratio = this.imageAspectRatio || 1;
+            const arena = document.querySelector('.puzzle-arena');
+            const arenaWidth = arena ? arena.clientWidth : window.innerWidth;
+            const isDesktop = window.innerWidth >= 900;
+
+            // Viewport boundaries: Generously large on PC (up to 850px wide, 750px tall), responsive on mobile
+            const maxAllowedW = isDesktop
+                ? Math.min(arenaWidth - 32, 850)
+                : Math.min(arenaWidth - 20, 560);
+
+            const maxAllowedH = isDesktop
+                ? Math.min(window.innerHeight * 0.76, 750)
+                : Math.min(window.innerHeight * 0.65, 540);
+
+            let boardW, boardH;
+            if (ratio >= 1) {
+                // Landscape or square: width is dominant
+                boardW = maxAllowedW;
+                boardH = Math.round(maxAllowedW / ratio);
+                if (boardH > maxAllowedH) {
+                    boardH = maxAllowedH;
+                    boardW = Math.round(maxAllowedH * ratio);
+                }
+            } else {
+                // Portrait (e.g. 9:16, 3:4): height is dominant
+                boardH = maxAllowedH;
+                boardW = Math.round(maxAllowedH * ratio);
+                if (boardW > maxAllowedW) {
+                    boardW = maxAllowedW;
+                    boardH = Math.round(maxAllowedW / ratio);
+                }
+            }
+
+            // Apply dynamic width and height to board wrapper
+            this.boardWrapper.style.width = `${boardW}px`;
+            this.boardWrapper.style.height = `${boardH}px`;
+
+            // Update CSS variable so stats bar, actions, and win banner scale to match
+            const controlWidth = Math.max(320, boardW);
+            document.documentElement.style.setProperty('--board-max-width', `${controlWidth}px`);
+        }
+
+        startTimer() {
+            if (this.timerStarted) return;
+            this.timerStarted = true;
+            this.timerInterval = setInterval(() => {
+                this.seconds++;
+                const mins = String(Math.floor(this.seconds / 60)).padStart(2, '0');
+                const secs = String(this.seconds % 60).padStart(2, '0');
+                this.timeDisplay.textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        stopTimer() {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+            this.timerStarted = false;
+        }
+
+        resetTimer() {
+            this.stopTimer();
+            this.seconds = 0;
+            this.timeDisplay.textContent = "00:00";
+        }
+
+        loadNewGame() {
+            this.resetTimer();
+            this.moves = 0;
+            this.movesDisplay.textContent = "0";
+            this.selectedTileIndex = null;
+            this.isWon = false;
+
+            // Hide win banner and restore normal board styling
+            this.winBanner.classList.add('hidden');
+            this.board.classList.remove('puzzle-solved');
+            this.boardWrapper.classList.remove('puzzle-solved');
+
+            const size = this.gridSize;
+            const total = size * size;
+
+            // Configure CSS Grid
+            this.board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            this.board.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+
+            // Create tile pieces: { origIndex, origRow, origCol }
+            const pieceData = [];
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const idx = r * size + c;
+                    pieceData.push({
+                        origIndex: idx,
+                        origRow: r,
+                        origCol: c
+                    });
+                }
+            }
+
+            // Shuffle with Fisher-Yates, ensuring it is not already solved
+            let shuffled = [...pieceData];
+            let attempts = 0;
+            do {
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                attempts++;
+            } while (this.countCorrect(shuffled) > Math.min(2, Math.floor(total * 0.2)) && attempts < 20);
+
+            this.tiles = shuffled;
+            this.renderBoard();
+            this.updateStats();
+        }
+
+        countCorrect(tilesArr) {
+            return tilesArr.reduce((acc, tile, currentIndex) => {
+                return acc + (tile.origIndex === currentIndex ? 1 : 0);
+            }, 0);
+        }
+
+        renderBoard() {
+            this.board.innerHTML = '';
+            this.tileElements = [];
+            const size = this.gridSize;
+
+            for (let i = 0; i < this.tiles.length; i++) {
+                const tileEl = document.createElement('div');
+                tileEl.className = 'puzzle-tile';
+                tileEl.dataset.index = i;
+                tileEl.setAttribute('draggable', 'true');
+
+                // Apply master background image & size ONCE
+                tileEl.style.backgroundImage = `url("${this.currentImageUrl}")`;
+                tileEl.style.backgroundSize = `${size * 100}% ${size * 100}%`;
+
+                // Number badge for hint
+                const numBadge = document.createElement('span');
+                numBadge.className = 'tile-number';
+                tileEl.appendChild(numBadge);
+
+                // Bind click to slot i
+                tileEl.addEventListener('click', () => this.handleTileClick(i));
+
+                // Bind drag-and-drop to slot i
+                this.bindTileDragAndDrop(tileEl, i);
+
+                this.board.appendChild(tileEl);
+                this.tileElements.push(tileEl);
+            }
+
+            // Apply background slice positions to all tiles
+            this.updateAllTilePositions();
+        }
+
+        updateAllTilePositions() {
+            for (let i = 0; i < this.tiles.length; i++) {
+                this.updateTileElement(i);
+            }
+        }
+
+        // Instant update of a single tile's slice position - 0ms DOM overhead!
+        updateTileElement(index) {
+            const tileEl = this.tileElements[index];
+            if (!tileEl) return;
+            const tile = this.tiles[index];
+            const size = this.gridSize;
+
+            const xPercent = size > 1 ? (tile.origCol / (size - 1)) * 100 : 0;
+            const yPercent = size > 1 ? (tile.origRow / (size - 1)) * 100 : 0;
+            tileEl.style.backgroundPosition = `${xPercent}% ${yPercent}%`;
+
+            // Update number badge
+            const numBadge = tileEl.querySelector('.tile-number');
+            if (numBadge) {
+                numBadge.textContent = tile.origIndex + 1;
+            }
+        }
+
+        bindTileDragAndDrop(tileEl, slotIndex) {
+            tileEl.addEventListener('dragstart', (e) => {
+                if (this.isWon) {
+                    e.preventDefault();
+                    return;
+                }
+                this.sound.playSelect();
+                this.startTimer();
+                e.dataTransfer.setData('text/plain', slotIndex);
+                e.dataTransfer.effectAllowed = 'move';
+                tileEl.classList.add('dragging');
+            });
+
+            tileEl.addEventListener('dragend', () => {
+                tileEl.classList.remove('dragging');
+                document.querySelectorAll('.puzzle-tile').forEach(t => t.classList.remove('drag-hover'));
+            });
+
+            tileEl.addEventListener('dragover', (e) => {
+                if (this.isWon) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                tileEl.classList.add('drag-hover');
+            });
+
+            tileEl.addEventListener('dragleave', () => {
+                tileEl.classList.remove('drag-hover');
+            });
+
+            tileEl.addEventListener('drop', (e) => {
+                if (this.isWon) return;
+                e.preventDefault();
+                tileEl.classList.remove('drag-hover');
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                const toIndex = slotIndex;
+                if (!isNaN(fromIndex) && fromIndex !== toIndex) {
+                    this.swapTiles(fromIndex, toIndex);
+                }
+            });
+        }
+
+        handleTileClick(clickedIndex) {
+            if (this.isWon) return;
+            this.startTimer();
+
+            if (this.selectedTileIndex === null) {
+                // First piece selected
+                this.selectedTileIndex = clickedIndex;
+                this.sound.playSelect();
+                this.highlightSelected();
+            } else if (this.selectedTileIndex === clickedIndex) {
+                // Deselect on re-click
+                this.selectedTileIndex = null;
+                this.sound.playSelect();
+                this.highlightSelected();
+            } else {
+                // Second piece selected: perform INSTANT swap!
+                const firstIndex = this.selectedTileIndex;
+                this.selectedTileIndex = null;
+                this.highlightSelected();
+                this.swapTiles(firstIndex, clickedIndex);
+            }
+        }
+
+        highlightSelected() {
+            if (!this.tileElements) return;
+            this.tileElements.forEach((el, idx) => {
+                el.classList.toggle('selected', idx === this.selectedTileIndex);
+            });
+        }
+
+        // Instant swap: updates ONLY the two affected tile elements in the DOM (Zero delay!)
+        swapTiles(indexA, indexB) {
+            // Swap pieces in data array
+            const temp = this.tiles[indexA];
+            this.tiles[indexA] = this.tiles[indexB];
+            this.tiles[indexB] = temp;
+
+            this.moves++;
+            this.movesDisplay.textContent = this.moves;
+
+            // Instant DOM update of JUST the 2 swapped elements (No DOM destruction/recreation!)
+            this.updateTileElement(indexA);
+            this.updateTileElement(indexB);
+
+            // Sound effect
+            this.sound.playSwap();
+
+            // Update progress & check win condition
+            this.updateStats();
+            this.checkWin();
+        }
+
+        updateStats() {
+            const total = this.gridSize * this.gridSize;
+            const correctCount = this.countCorrect(this.tiles);
+            this.placedDisplay.textContent = `${correctCount} / ${total}`;
+
+            const percent = Math.round((correctCount / total) * 100);
+            this.progressFill.style.width = `${percent}%`;
+        }
+
+        checkWin() {
+            const total = this.gridSize * this.gridSize;
+            const correctCount = this.countCorrect(this.tiles);
+
+            if (correctCount === total && !this.isWon) {
+                this.isWon = true;
+                this.stopTimer();
+                this.sound.playWin();
+                this.confetti.fire();
+
+                // Seamless picture presentation:
+                // 1. Board gaps and borders disappear smoothly so the player sees their 100% complete artwork
+                this.board.classList.add('puzzle-solved');
+                this.boardWrapper.classList.add('puzzle-solved');
+
+                // 2. Reveal the celebratory card BELOW the board (never obscuring the solved picture)
+                this.winTime.textContent = this.timeDisplay.textContent;
+                this.winMoves.textContent = this.moves;
+                this.winGrid.textContent = `${this.gridSize}×${this.gridSize}`;
+                this.winBanner.classList.remove('hidden');
+
+                setTimeout(() => {
+                    this.winBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            }
+        }
+    }
+
+    // Start game when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        window.game = new PuzzleGame();
+    });
+</script>
+</body>
+
+
+</html>

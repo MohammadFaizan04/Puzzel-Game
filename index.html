@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
     <title>Photo Puzzle Game | Jigsaw Picture Challenge</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -24,6 +25,7 @@
             </div>
 
             <div class="header-actions">
+                <a href="gallery.html" class="gallery-nav-link" title="Open Photo Gallery (Saved Collection)">🖼️ Photo Gallery</a>
                 <button type="button" class="icon-btn" id="sound-toggle" title="Toggle Sound (Mute/Unmute)" aria-label="Toggle sound">🔊</button>
             </div>
         </div>
@@ -77,6 +79,12 @@
                     <div class="preset-thumbs" id="preset-thumbs">
                         <!-- Presets injected via JS -->
                     </div>
+                </div>
+
+                <div style="margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); text-align: center;">
+                    <a href="gallery.html" class="gallery-nav-link" style="justify-content: center; width: 100%; text-decoration: none;">
+                        🖼️ Open Saved Photo Gallery (31+ Images) &rarr;
+                    </a>
                 </div>
             </div>
 
