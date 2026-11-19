@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Puzzle Game | Jigsaw Picture Challenge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Canvas for Win Confetti Particles -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- App Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-group">
+                <div class="logo-icon">🧩</div>
+                <div class="logo-text">
+                    <h1>Photo Puzzle Master</h1>
+                    <p>Upload your image, select grid cuts, and solve the jigsaw puzzle!</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button type="button" class="icon-btn" id="sound-toggle" title="Toggle Sound (Mute/Unmute)" aria-label="Toggle sound">🔊</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="controls-sidebar">
+            <!-- 1. Upload Local Image, Web URL & Presets -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">1</span> Choose Photo
+                </h2>
+                
+                <!-- Tab selector: Upload File vs Image Web Link -->
+                <div class="photo-source-tabs">
+                    <button type="button" class="source-tab active" data-tab="upload">📁 Upload File</button>
+                    <button type="button" class="source-tab" data-tab="url">🔗 Image Link (URL)</button>
+                </div>
+
+                <!-- Panel 1: Local File Upload -->
+                <div class="source-panel active" id="panel-upload">
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Upload Local Photo</div>
+                        <div class="upload-hint">Click to browse or drag & drop (PNG, JPG, WEBP)</div>
+                        <input type="file" id="file-upload" accept="image/*" aria-label="Upload local photo">
+                    </div>
+                </div>
+
+                <!-- Panel 2: External Image URL Link -->
+                <div class="source-panel" id="panel-url">
+                    <div class="url-input-box">
+                        <input type="url" id="image-url-input" placeholder="Paste image link (https://...)" aria-label="External image link">
+                        <button type="button" id="btn-load-url" class="btn-load-url">Load</button>
+                    </div>
+                    <div class="url-feedback" id="url-feedback"></div>
+                    <div class="sample-links">
+                        <small>Quick sample image links:</small>
+                        <div class="sample-pills">
+                            <button type="button" class="sample-pill" data-url="https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1000&q=80">Art Portrait</button>
+                            <button type="button" class="sample-pill" data-url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1000&q=80">Mountain 16:9</button>
+                            <button type="button" class="sample-pill" data-url="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1000&q=80">Aurora Night</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="presets-container">
+                    <p class="presets-label">Or choose a preset artwork:</p>
+                    <div class="preset-thumbs" id="preset-thumbs">
+                        <!-- Presets injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Grid Cut Size (3x3, 4x4, 6x6, 8x8) -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">2</span> Select Grid Cuts
+                </h2>
+                <div class="grid-options">
+                    <button type="button" class="grid-btn active" data-size="3">
+                        <span>3 × 3</span>
+                        <small>9 Boxes (Easy)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="4">
+                        <span>4 × 4</span>
+                        <small>16 Boxes (Medium)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="6">
+                        <span>6 × 6</span>
+                        <small>36 Boxes (Hard)</small>
+                    </button>
+                    <button type="button" class="grid-btn" data-size="8">
+                        <span>8 × 8</span>
+                        <small>64 Boxes (Expert)</small>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Helper Toggles -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="badge">3</span> Game Settings
+                </h2>
+                <div class="options-list">
+                    <label class="toggle-item">
+                        <span>🔢 Show Number Guides</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggle-numbers">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+
+                    <label class="toggle-item">
+                        <span>👁️ Target Photo Preview</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggle-preview" checked>
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Original Image Preview Card -->
+            <div class="card preview-card" id="preview-card">
+                <h2 class="card-title">
+                    <span>🖼️ Target Preview</span>
+                    <span class="ratio-tag" id="ratio-badge">1:1 Square</span>
+                </h2>
+                <div class="preview-wrapper">
+                    <img id="preview-image" src="" alt="Target reference preview">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Puzzle Play Arena -->
+        <main class="puzzle-arena">
+            <!-- Game Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Time</span>
+                    <span class="stat-value highlight" id="time-display">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Moves</span>
+                    <span class="stat-value" id="moves-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Placed</span>
+                    <span class="stat-value highlight" id="placed-display">0 / 9</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-track" aria-label="Puzzle completion progress">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <!-- Puzzle Board Container -->
+            <div class="puzzle-board-wrapper" id="puzzle-board-wrapper">
+                <div class="puzzle-board" id="puzzle-board" aria-label="Puzzle play grid">
+                    <!-- Dynamic Tiles injected here -->
+                </div>
+            </div>
+
+            <!-- Victory Celebration Section (Situated BELOW the board so user can admire the completed picture!) -->
+            <section id="win-banner" class="win-banner hidden" aria-live="polite">
+                <div class="win-banner-header">
+                    <div class="win-banner-icon">🏆</div>
+                    <div>
+                        <h2 class="win-title">Congratulations! You Solved It!</h2>
+                        <p class="win-subtitle">Here is your completed picture! You did an amazing job! 🎉</p>
+                    </div>
+                </div>
+
+                <div class="win-stats-grid">
+                    <div class="win-stat">
+                        <span class="win-stat-label">Time Taken</span>
+                        <span class="win-stat-val" id="win-time">00:00</span>
+                    </div>
+                    <div class="win-stat">
+                        <span class="win-stat-label">Total Moves</span>
+                        <span class="win-stat-val" id="win-moves">0</span>
+                    </div>
+                    <div class="win-stat">
+                        <span class="win-stat-label">Grid Size</span>
+                        <span class="win-stat-val" id="win-grid">3×3</span>
+                    </div>
+                </div>
+
+                <div class="win-actions-row">
+                    <button type="button" class="btn-win-primary" id="btn-next-game">
+                        ▶️ Play Again
+                    </button>
+                    <button type="button" class="btn-win-secondary" id="btn-next-level">
+                        ⬆️ Next Difficulty Level
+                    </button>
+                    <button type="button" class="btn-win-secondary" id="btn-upload-win">
+                        📁 Upload Another Photo
+                    </button>
+                </div>
+            </section>
+
+            <!-- Board Bottom Actions -->
+            <div class="board-actions">
+                <button type="button" class="action-btn primary" id="shuffle-btn">
+                    <span>🔀</span> Reshuffle Tiles
+                </button>
+                <button type="button" class="action-btn" id="reset-game-btn">
+                    <span>🔄</span> New Game
+                </button>
+            </div>
+
+            <div class="instruction-banner">
+                <p>💡 <strong>How to Play:</strong> Click a tile to select it, then click another tile to swap them. Or simply <strong>drag and drop</strong> tiles into their correct positions!</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
